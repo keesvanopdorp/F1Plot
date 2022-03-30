@@ -6,6 +6,8 @@ import { ChangeEvent, ReactElement, useEffect, useState } from 'react';
 import { Col, Container, FormSelect, Row } from 'react-bootstrap';
 import Navbar from '@components/navbar';
 import '@styles/Home.module.css'
+import Footer from '@components/footer';
+import Head from 'next/head';
 
 const Plot = dynamic(() => import('react-plotly.js'), {
   ssr: false
@@ -36,14 +38,14 @@ function Home() {
       Axios.get(url).then((res: AxiosResponse) => {
         console.log(res.data);
         setLaptimes(res.data);
+      }).finally(() => {
+        setShowGraph(true);
       })
-      setShowGraph(true);
     }
-  }, [seasons, season, race, driver])
+  }, [seasons, season, race, driver, drivers])
+
 
   const getDriversAndRaces = async (season: string) => {
-    setDrivers([])
-    setRaces([])
     const driversUrl = `/api/${season}/drivers`
     const racesUrl = `/api/${season}/races`
 
@@ -81,12 +83,15 @@ function Home() {
     console.log(selectedRace);
     return (<Plot data={data}
       config={{ displaylogo: false }}
-      layout={{ width: window.innerWidth - 100, height: 800, title: `${selectedRace.raceName} ${selectedRace.season}`, showlegend: true, xaxis: { autotick: false, ticks: 'outside', tick0: 1, dtick: 5, range: range } }}
+      layout={{ width: window.innerWidth - 90, height: 800, title: `${selectedRace.raceName} ${selectedRace.season}`, showlegend: true, xaxis: { autotick: false, ticks: 'outside', tick0: 1, dtick: 5, range: range } }}
     />)
   }
 
   return (
     <div id="home">
+      <Head>
+        <title>F1Plot: Home</title>
+      </Head>
       <Navbar />
       <Container fluid className='mt-3'>
         <Row>
@@ -117,6 +122,7 @@ function Home() {
         </Row>
         {showGraph && renderGraph()}
       </Container>
+      <Footer />
     </div>
   )
 }
