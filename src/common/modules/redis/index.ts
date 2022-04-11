@@ -1,10 +1,7 @@
 import { createClient } from 'redis'
 
-console.log(process.env.REDIS_URL as string);
-
-
 export const client = createClient({
-    url: process.env.REDIS_URL as string
+    url: process.env.REDIS_URL as string,
 })
 
 export const connect = async (): Promise<void> => {

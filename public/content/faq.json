@@ -1,4 +1,5 @@
 {
-    "What is this website for?": "This website is for all the f1 fans that also like to look at statistics for the latest races of for historic races from 2000 until now. Also on this website it is possible to download charts from the selected race",
-    "Why was this website created?": "I created this website because there was not yet a good place to find such graphics"
+    "What is this website for?": "This website is for all the f1 fans that also like to look at statistics for the latest races of for historic races from 2000 until now. Also on this website it is possible to download charts from the selected race.",
+    "Why was this website created?": "I created this website because there was not yet a good place to find such graphics.",
+    "Where comes the data for this application from?": "The data that is used in this application all comes from the Ergast F1 API, and is processed by my custom backend to process the data."
 }

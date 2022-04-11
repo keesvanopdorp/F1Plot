@@ -19,7 +19,8 @@
         "@types": ["src/common/types/index"],
         "@redis": ["src/common/modules/redis/index"],
         "@components/*": ["src/common/components/*"],
-        "@styles/*": ["src/styles/*"]
+        "@components": ["src/common/components"],
+        "@styles/*": ["src/styles/*"],
     }
   },
   "include": ["src/next-env.d.ts", "**/*.ts", "**/*.tsx"],

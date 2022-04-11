@@ -3,7 +3,7 @@ import { Race, RacesRequest } from "@types";
 import Axios, { AxiosResponse } from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function hanlder(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connect()
     const { season } = req.query;
     const key = `seasons:${season}:races`;
@@ -14,12 +14,13 @@ export default async function hanlder(req: NextApiRequest, res: NextApiResponse)
         const url = `https://ergast.com/api/f1/${season}.json?limit=100`
         const res: AxiosResponse<RacesRequest> = await Axios.get(url)
         const data = res.data.MRData.RaceTable.Races;
-        await client.json.set(key, ".", JSON.stringify(data))
+        await client.json.set(key, ".", JSON.parse(JSON.stringify(data)))
+        const d = new Date();
+        await client.EXPIREAT(key, d.setDate(60))
         races = data;
     } else {
-        // Drivers for that season do exist in redis
-        races = JSON.parse(racesFromRedis as string);
+        console.log(racesFromRedis);
+        races = JSON.parse(JSON.stringify(racesFromRedis))
     }
-    await close()
     return res.status(200).json(races);
 }

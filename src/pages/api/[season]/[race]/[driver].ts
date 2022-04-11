@@ -5,6 +5,8 @@ import { NextApiRequest, NextApiResponse } from "next"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connect();
+    console.log(`client is open: ${client.isOpen}`);
+    
     const { race, season, driver } = req.query;
     const redisKey = `seasons:${season}:${race}:${driver}`;
     const laptimesFromRedis = await client.json.get(redisKey)
@@ -29,10 +31,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
             }
         }
-        await client.json.set(redisKey, ".", JSON.stringify(laptimes));
+        await client.json.set(redisKey, ".", JSON.parse(JSON.stringify(laptimes)));
     } else {
-        laptimes = JSON.parse(laptimesFromRedis as string);
+        laptimes = JSON.parse(JSON.stringify(laptimesFromRedis));
     } 
-    await close()
     res.status(200).json(laptimes);
 }

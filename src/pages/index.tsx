@@ -1,13 +1,15 @@
+import { Navbar } from '@components';
+import Footer from '@components/footer';
+import { faUndo } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import '@styles/Home.module.css';
 import type { Driver, Race, Season } from '@types';
 import Axios, { AxiosResponse } from 'axios';
 import dynamic from 'next/dynamic';
+import Head from 'next/head';
 import { Data } from 'plotly.js';
 import { ChangeEvent, ReactElement, useEffect, useState } from 'react';
-import { Col, Container, FormSelect, Row } from 'react-bootstrap';
-import Navbar from '@components/navbar';
-import '@styles/Home.module.css'
-import Footer from '@components/footer';
-import Head from 'next/head';
+import { Button, Col, Container, FormSelect, Row } from 'react-bootstrap';
 
 const Plot = dynamic(() => import('react-plotly.js'), {
   ssr: false
@@ -20,7 +22,7 @@ function Home() {
   const [showGraph, setShowGraph] = useState<boolean>(false)
   const [race, setRace] = useState<string | undefined>(undefined);
   const [driver, setDriver] = useState<string>('all')
-  const [season, setSeason] = useState<string | undefined>(undefined)
+  const [season, setSeason] = useState<string | undefined>(undefined);
   const [laptimes, setLaptimes] = useState<{ [key: string]: string[] }>({})
 
   useEffect(() => {
@@ -32,36 +34,48 @@ function Home() {
     }
 
     if (race !== undefined && season !== undefined) {
+      if (process.env.NODE_ENV === "production") {
+        window.onbeforeunload = () => {
+          console.log('i get triggerd');
+          return 'test';
+        }
+      }
       setLaptimes({})
       const url = `	/api/${season}/${race}/${driver !== 'all' ? `${driver}` : 'all'}`
       console.log(`url: ${url}`);
       Axios.get(url).then((res: AxiosResponse) => {
         console.log(res.data);
         setLaptimes(res.data);
-      }).finally(() => {
-        setShowGraph(true);
+        getDrivers(season).then(() => {
+          setDrivers((drivers) => (drivers.filter((driver: Driver) => Object.keys(res.data).includes(driver.driverId))));
+          setShowGraph(true);
+        })
       })
     }
-  }, [seasons, season, race, driver, drivers])
+  }, [seasons, season, race, driver])
+
+  const getDrivers = async (season: string) => {
+    const url = `/api/${season}/drivers`
+    const res: AxiosResponse<Driver[]> = await Axios.get(url)
+    setDrivers(res.data);
+  }
 
 
-  const getDriversAndRaces = async (season: string) => {
-    const driversUrl = `/api/${season}/drivers`
+  const getRaces = async (season: string) => {
     const racesUrl = `/api/${season}/races`
-
-    Axios.get(driversUrl).then((res: AxiosResponse<Driver[]>) => {
-      setDrivers(res.data);
-    }).finally(() => {
-      Axios.get(racesUrl).then((res: AxiosResponse<Race[]>) => {
-        setRaces(res.data);
-        setRace(res.data[0].round);
-      })
+    Axios.get(racesUrl).then((res: AxiosResponse<Race[]>) => {
+      setRaces(res.data);
+      setRace(res.data[0].round);
     })
   }
 
   const setSelectedSeason = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSeason(e.currentTarget.value);
-    getDriversAndRaces(e.currentTarget.value);
+    reset();
+    const season = e.currentTarget.value;
+    setSeason(season);
+    getRaces(season).finally(() => {
+      getDrivers(season);
+    })
   }
 
   const renderGraph = (): ReactElement => {
@@ -69,6 +83,7 @@ function Home() {
     let range: [number, number] | [] = [];
     for (let key of Object.keys(laptimes)) {
       const selectedDriver = drivers.filter((d: Driver) => d.driverId === key)[0]
+      console.log(selectedDriver);
       if (range === null) range = [1, laptimes[key].length]
       console.log(range);
       const y = laptimes[key].map((time: string) => {
@@ -83,8 +98,21 @@ function Home() {
     console.log(selectedRace);
     return (<Plot data={data}
       config={{ displaylogo: false }}
-      layout={{ width: window.innerWidth - 90, height: 800, title: `${selectedRace.raceName} ${selectedRace.season}`, showlegend: true, xaxis: { autotick: false, ticks: 'outside', tick0: 1, dtick: 5, range: range } }}
+      style={{ width: '95vw', height: '80vh' }}
+      className="mx-auto"
+      layout={{ title: `${selectedRace.raceName} ${selectedRace.season}`, showlegend: true, xaxis: { autotick: false, ticks: 'outside', tick0: 1, dtick: 5, range: range } }}
     />)
+  }
+
+  const reset = () => {
+    setShowGraph(false);
+    setLaptimes({});
+    setDriver('all');
+    setRace(undefined);
+    setSeason(undefined);
+    setDrivers([]);
+    setRaces([]);
+    if(process.env.NODE_ENV === "production") window.onbeforeunload = null;
   }
 
   return (
@@ -94,8 +122,11 @@ function Home() {
       </Head>
       <Navbar />
       <Container fluid className='mt-3'>
-        <Row>
-          <Col>
+        <Row className='mb-1' style={{ width: "95vw" }}>
+
+          {/* Shows a list of all the seasons to select */}
+          <Col className="d-flex align-items-center" sm={{ offset: 2 }}>
+            <label className='me-2'>Season: </label>
             <FormSelect onChange={setSelectedSeason}>
               <option value={undefined} disabled>Select a option</option>
               {seasons.map((season: Season, index: number) => (
@@ -103,22 +134,39 @@ function Home() {
               ))}
             </FormSelect>
           </Col>
-          {races.length > 0 && <Col>
-            <FormSelect onChange={(e) => setRace(e.target.value)}>
-              <option value={undefined} disabled>Select a option</option>
-              {races.map((race: Race, index: number) => (
-                <option disabled={new Date() < new Date(race.date)} key={index} value={race.round}>{`${race.raceName}`}</option>
-              ))}
-            </FormSelect>
-          </Col>}
-          {drivers.length > 0 && <Col>
-            <FormSelect value={driver} onChange={(e) => setDriver(e.target.value)}>
-              <option value="all">All</option>
-              {drivers.map((driver: Driver, index: number) => (
-                <option key={index} value={driver.driverId}>{`${driver.givenName} ${driver.familyName}`}</option>
-              ))}
-            </FormSelect>
-          </Col>}
+
+          {/* Shows the dropdown of races from that season when the array size is bigger than 0 */}
+          {races.length > 0 &&
+            <Col className="d-flex align-items-center">
+              <label className="me-2">Race: </label>
+              <FormSelect onChange={(e) => setRace(e.target.value)}>
+                <option value={undefined} disabled>Select a option</option>
+                {races.map((race: Race, index: number) => (
+                  <option disabled={new Date() < new Date(race.date)} key={index} value={race.round}>{`${race.raceName}`}</option>
+                ))}
+              </FormSelect>
+            </Col>
+          }
+
+          {/* Shows the dropdown of drivers from that season when the array size is bigger than 0 */}
+          {drivers.length > 0 &&
+            <Col className="d-flex align-items-center">
+              <label className="me-2">Driver: </label>
+              <FormSelect value={driver} onChange={(e) => setDriver(e.target.value)}>
+                <option value="all">All</option>
+                {drivers.map((driver: Driver, index: number) => (
+                  <option key={index} value={driver.driverId}>{`${driver.givenName} ${driver.familyName}`}</option>
+                ))}
+              </FormSelect>
+            </Col>
+          }
+          
+          {/* Shows the reset button if a race and a driver is selected from both dropdowns */}
+          {race !== undefined && season !== undefined &&
+            <Col className="d-flex align-items-center">
+              <Button variant="danger" className='px-5' onClick={reset}>Reset <FontAwesomeIcon icon={faUndo} /></Button>
+            </Col>
+          }
         </Row>
         {showGraph && renderGraph()}
       </Container>

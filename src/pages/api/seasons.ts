@@ -1,20 +1,19 @@
 import { client, close, connect } from "@redis";
+import { Season, SeasonsRequest } from "@types";
+import Axios, { AxiosResponse } from "axios";
 import { NextApiRequest, NextApiResponse } from "next";
-import {Season, SeasonsRequest} from "@types";
-import Axios,{ AxiosResponse } from "axios";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connect()
     const key = `seasons`;
     let seasons: Season[] = [];
     const seasonsFromRedis = await client.json.get(key);
-    if(!seasonsFromRedis) {
+    if (!seasonsFromRedis) {
         const res: AxiosResponse<SeasonsRequest> = await Axios.get("https://ergast.com/api/f1/seasons.json?limit=1000&offset=50")
         seasons = res.data.MRData.SeasonTable.Seasons;
-        await client.json.set(key, ".", JSON.stringify(seasons));
+        await client.json.set(key, ".", JSON.parse(JSON.stringify(seasons)));
     } else {
-        seasons = JSON.parse(seasonsFromRedis as string);
+        seasons = JSON.parse(JSON.stringify(seasonsFromRedis));
     }
-    await close();
     return res.status(200).json(seasons);
 }
