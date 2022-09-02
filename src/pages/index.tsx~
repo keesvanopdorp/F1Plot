@@ -23,9 +23,7 @@ import {
   Row,
 } from "react-bootstrap";
 
-// Dynamicly loads the Plot component from react-ploty.js
 const Plot = dynamic(() => import("react-plotly.js"), {
-  // Disables SSR for loading this component
   ssr: false,
 });
 
@@ -41,11 +39,7 @@ export default function Home() {
   const seasonRef = createRef<HTMLSelectElement>();
   const raceRef = createRef<HTMLSelectElement>();
 
-  /**
-   * Function to reset the site back to it initial state
-   * @returns {void}
-   */
-  const reset = (): void => {
+  const reset = () => {
     setRaces([]);
     setDrivers([]);
     setShowGraph(false);
@@ -56,24 +50,13 @@ export default function Home() {
     if (process.env.NODE_ENV === "production") window.onbeforeunload = null;
   };
 
-  /**
-   * This function this to all the drivers from the selected season from the API
-   * @param {string} selectedSeason
-   * @returns {Promise<void>}
-   */
-  const getDrivers = async (selectedSeason: string): Promise<void> => {
-    // URL of the API endpoint for the seasons drivers
+  const getDrivers = async (selectedSeason: string) => {
     const url = `/api/${selectedSeason}/drivers`;
     const res: AxiosResponse<Driver[]> = await Axios.get(url);
     setDrivers(res.data);
   };
 
-  /**
-   * This function this to all the races from the selected season from the API
-   * @param {string} selectedSeason
-   * @returns {Promise<void>}
-   */
-  const getRaces = async (selectedSeason: string): Promise<void> => {
+  const getRaces = async (selectedSeason: string) => {
     const racesUrl = `/api/${selectedSeason}/races`;
     Axios.get(racesUrl).then((res: AxiosResponse<Race[]>) => {
       setRaces(res.data);
@@ -81,7 +64,7 @@ export default function Home() {
     });
   };
 
-  useEffect((): void => {
+  useEffect(() => {
     // console.log(seasonRef);
     if (seasons.length <= 0) {
       Axios.get("../api/seasons").then((res: AxiosResponse<Season[]>) => {
@@ -120,13 +103,9 @@ export default function Home() {
           setShowGraph(true);
         });
     }
-  }, [seasons, season, race, driver]);
+  }, [seasons, season, race, driver, raceRef]);
 
-  /**
-   * Set the season that is selected and gets the drivers from that season
-   * @param {ChangeEvent<HTMLSelectElement>} e
-   */
-  const setSelectedSeason = (e: ChangeEvent<HTMLSelectElement>): void => {
+  const setSelectedSeason = (e: ChangeEvent<HTMLSelectElement>) => {
     reset();
     const selectedSeason = e.currentTarget.value;
     setSeason(selectedSeason);
@@ -135,10 +114,6 @@ export default function Home() {
     });
   };
 
-  /**
-   * Function to create the graph that gets renderd
-   * @returns {ReactElement} Graph element
-   */
   const renderGraph = (): ReactElement => {
     const data: Data[] = [];
     let range: [number, number] | [] = [];
@@ -155,14 +130,12 @@ export default function Home() {
         const seconds = parseFloat(splitted[1]);
         return parseFloat((minutes * 60 + seconds).toFixed(3));
       });
-      if(selectedDriver !== undefined) {
-        data.push({
-          name: `${selectedDriver.givenName} ${selectedDriver.familyName}`,
-          y,
-          text: laptimes[key],
-          mode: "lines+markers",
-        });
-      }
+      data.push({
+        name: `${selectedDriver.givenName} ${selectedDriver.familyName}`,
+        y,
+        text: laptimes[key],
+        mode: "lines+markers",
+      });
     });
     const selectedRace = races.filter((r: Race) => r.round === race)[0];
     console.log(selectedRace);
