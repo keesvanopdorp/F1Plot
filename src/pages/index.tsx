@@ -37,7 +37,7 @@ export default function Home() {
   const [race, setRace] = useState<string | undefined>(undefined);
   const [driver, setDriver] = useState<string>("all");
   const [season, setSeason] = useState<string | undefined>(undefined);
-  const [laptimes, setLaptimes] = useState<{ [key: string]: string[] }>({});
+  const [laptimes, setLaptimes] = useState<{ [key: string]: { position: string; time: string; }[] }>({});
   const seasonRef = createRef<HTMLSelectElement>();
   const raceRef = createRef<HTMLSelectElement>();
 
@@ -92,7 +92,6 @@ export default function Home() {
     if (race !== undefined && season !== undefined) {
       if (process.env.NODE_ENV === "production") {
         window.onbeforeunload = () => {
-          console.log("i get triggerd");
           return true;
         };
       }
@@ -106,7 +105,6 @@ export default function Home() {
       }`;
       Axios.get(url)
         .then((res: AxiosResponse) => {
-          console.log(res.data);
           setLaptimes(res.data);
           getDrivers(season).then(() => {
             setDrivers((oldDrivers: Driver[]) =>
@@ -148,8 +146,7 @@ export default function Home() {
       )[0];
       console.log(selectedDriver);
       if (range === null) range = [1, laptimes[key].length];
-      console.log(range);
-      const y = laptimes[key].map((time: string) => {
+      const y = laptimes[key].map(({time}) => {
         const splitted = time.split(":");
         const minutes = parseInt(splitted[0], 10);
         const seconds = parseFloat(splitted[1]);
@@ -159,13 +156,14 @@ export default function Home() {
         data.push({
           name: `${selectedDriver.givenName} ${selectedDriver.familyName}`,
           y,
-          text: laptimes[key],
+          text: laptimes[key].map(({position, time}) => {
+            return `${time} (position: ${position})`
+          }),
           mode: "lines+markers",
         });
       }
     });
     const selectedRace = races.filter((r: Race) => r.round === race)[0];
-    console.log(selectedRace);
     return (
       <Plot
         data={data}

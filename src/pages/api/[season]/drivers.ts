@@ -12,7 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const driversFromRedis = await client.json.get(key);
     if (!driversFromRedis) {
         // drivers for that season dont exist in redis
-        console.log('ik ga de drivers ophalen');
         const url = `https://ergast.com/api/f1/${season}/drivers.json?limit=100`
         const res: AxiosResponse<DriversRequest> = await Axios.get(url)
         const data = res.data.MRData.DriverTable.Drivers;

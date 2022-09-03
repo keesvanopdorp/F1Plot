@@ -24,6 +24,7 @@ module.exports = {
     "import/extensions": "off",
     "react/prop-types": "off",
     "no-console": "off",
+    " object-curly-spacing": ["error", "always"],
     "jsx-a11y/anchor-is-valid": "off",
     "react/jsx-props-no-spreading": ["error", { custom: "ignore" }],
     "prettier/prettier": "error",

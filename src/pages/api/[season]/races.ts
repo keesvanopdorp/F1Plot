@@ -19,7 +19,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         await client.EXPIREAT(key, d.setDate(60))
         races = data;
     } else {
-        console.log(racesFromRedis);
         races = JSON.parse(JSON.stringify(racesFromRedis))
     }
     return res.status(200).json(races);
