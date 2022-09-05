@@ -1,17 +1,17 @@
-import { createClient } from 'redis'
+import { createClient } from "redis";
 
 export const client = createClient({
-    url: process.env.REDIS_URL as string,
-})
+  url: process.env.REDIS_URL as string,
+});
 
 export const connect = async (): Promise<void> => {
-    if(!client.isOpen) {
-        client.connect()
-    }
-}
+  if (!client.isOpen) {
+    client.connect();
+  }
+};
 
 export const close = async () => {
-    if(client.isOpen) {
-        client.quit();
-    }
-}
+  if (client.isOpen) {
+    client.quit();
+  }
+};

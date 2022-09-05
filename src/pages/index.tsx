@@ -3,7 +3,7 @@ import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "@styles/Home.module.css";
 import type { Driver, Race, Season } from "@types";
-import Axios, { AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { Data } from "plotly.js";
@@ -37,7 +37,9 @@ export default function Home() {
   const [race, setRace] = useState<string | undefined>(undefined);
   const [driver, setDriver] = useState<string>("all");
   const [season, setSeason] = useState<string | undefined>(undefined);
-  const [laptimes, setLaptimes] = useState<{ [key: string]: { position: string; time: string; }[] }>({});
+  const [laptimes, setLaptimes] = useState<{
+    [key: string]: { position: string; time: string }[];
+  }>({});
   const seasonRef = createRef<HTMLSelectElement>();
   const raceRef = createRef<HTMLSelectElement>();
 
@@ -64,7 +66,7 @@ export default function Home() {
   const getDrivers = async (selectedSeason: string): Promise<void> => {
     // URL of the API endpoint for the seasons drivers
     const url = `/api/${selectedSeason}/drivers`;
-    const res: AxiosResponse<Driver[]> = await Axios.get(url);
+    const res: AxiosResponse<Driver[]> = await axios.get(url);
     setDrivers(res.data);
   };
 
@@ -75,7 +77,7 @@ export default function Home() {
    */
   const getRaces = async (selectedSeason: string): Promise<void> => {
     const racesUrl = `/api/${selectedSeason}/races`;
-    Axios.get(racesUrl).then((res: AxiosResponse<Race[]>) => {
+    axios.get(racesUrl).then((res: AxiosResponse<Race[]>) => {
       setRaces(res.data);
       setRace(res.data[0].round);
     });
@@ -84,7 +86,7 @@ export default function Home() {
   useEffect((): void => {
     // console.log(seasonRef);
     if (seasons.length <= 0) {
-      Axios.get("../api/seasons").then((res: AxiosResponse<Season[]>) => {
+      axios.get("../api/seasons").then((res: AxiosResponse<Season[]>) => {
         setSeasons(res.data);
       });
     }
@@ -103,7 +105,8 @@ export default function Home() {
       const url = `/api/${season}/${race}/${
         driver !== "all" ? `${driver}` : "all"
       }`;
-      Axios.get(url)
+      axios
+        .get(url)
         .then((res: AxiosResponse) => {
           setLaptimes(res.data);
           getDrivers(season).then(() => {
@@ -144,20 +147,19 @@ export default function Home() {
       const selectedDriver = drivers.filter(
         (d: Driver) => d.driverId === key
       )[0];
-      console.log(selectedDriver);
       if (range === null) range = [1, laptimes[key].length];
-      const y = laptimes[key].map(({time}) => {
+      const y = laptimes[key].map(({ time }) => {
         const splitted = time.split(":");
         const minutes = parseInt(splitted[0], 10);
         const seconds = parseFloat(splitted[1]);
         return parseFloat((minutes * 60 + seconds).toFixed(3));
       });
-      if(selectedDriver !== undefined) {
+      if (selectedDriver !== undefined) {
         data.push({
           name: `${selectedDriver.givenName} ${selectedDriver.familyName}`,
           y,
-          text: laptimes[key].map(({position, time}) => {
-            return `${time} (position: ${position})`
+          text: laptimes[key].map(({ position, time }) => {
+            return `${time} (position: ${position})`;
           }),
           mode: "lines+markers",
         });

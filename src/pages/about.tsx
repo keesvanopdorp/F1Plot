@@ -1,5 +1,5 @@
 import { Footer, Navbar } from "@components";
-import Axios, { AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import { Accordion, Container } from "react-bootstrap";
@@ -11,7 +11,7 @@ export default function About() {
   // runs when the page is load and is ony run once
   useEffect((): void => {
     // Gets the FAQ questions from the content folder
-    Axios.get("/content/faq.json").then((res: AxiosResponse) => {
+    axios.get("/content/faq.json").then((res: AxiosResponse) => {
       setContent(res.data);
     });
 

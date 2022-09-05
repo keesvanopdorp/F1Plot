@@ -1,4 +1,4 @@
 export default interface Season {
-    season: string;
-    url: string;
+  season: string;
+  url: string;
 }

@@ -1,17 +1,13 @@
 module.exports = {
-   env: {
-     browser: true,
-     node: true,
-     es2020: true,
-   },
-  parser: "@typescript-eslint/parser",
-  parserOptions: {
-    project: ["./tsconfig.json"],
+  env: {
+    browser: true,
+    node: true,
+    es2020: true,
   },
+  parser: "@typescript-eslint/parser",
+  parserOptions: {},
   plugins: ["@typescript-eslint", "react", "prettier"],
   extends: [
-    "airbnb",
-    "airbnb/hooks",
     "plugin:react/recommended",
     "plugin:import/errors",
     "plugin:import/warnings",
@@ -24,7 +20,7 @@ module.exports = {
     "import/extensions": "off",
     "react/prop-types": "off",
     "no-console": "off",
-    " object-curly-spacing": ["error", "always"],
+    "object-curly-spacing": ["error", "always"],
     "jsx-a11y/anchor-is-valid": "off",
     "react/jsx-props-no-spreading": ["error", { custom: "ignore" }],
     "prettier/prettier": "error",
@@ -40,7 +36,10 @@ module.exports = {
   },
   settings: {
     "import/resolver": {
-      "typescript": {}
+      typescript: {},
+    },
+    react: {
+      version: "detect",
     },
   },
 };
