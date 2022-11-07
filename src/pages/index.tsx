@@ -97,10 +97,7 @@ export default function Home() {
           return true;
         };
       }
-      // if (typeof raceRef race !== raceRef.current.value) setDrivers([]);
-      // if(season !== seasonRef.current.value) s([]);
       setLaptimes({});
-      // setDrivers([]);
       setShowGraph(false);
       const url = `/api/${season}/${race}/${
         driver !== "all" ? `${driver}` : "all"
@@ -227,6 +224,7 @@ export default function Home() {
                 name="race"
                 onChange={(e) => setRace(e.target.value)}
                 ref={raceRef}
+                defaultValue={undefined}
               >
                 <option value={undefined} disabled>
                   Select a option

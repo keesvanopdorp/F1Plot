@@ -1,5 +1,5 @@
 import Link from "next/link";
-import React, { ReactNode } from "react";
+import React from "react";
 import "./footer.module.scss";
 
 export default function Footer() {

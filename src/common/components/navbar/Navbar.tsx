@@ -10,7 +10,7 @@ export default function Navbar() {
           <h1 className="w-25 text-center text-white">F1Plot</h1>
         </Link>
         <Nav>
-          <Nav.Link href="/">Home page</Nav.Link>
+          <Nav.Link href="/">Homepage</Nav.Link>
           <Nav.Link href="/about">FAQ / About</Nav.Link>
         </Nav>
       </Container>
